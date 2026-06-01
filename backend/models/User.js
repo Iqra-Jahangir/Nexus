@@ -27,20 +27,7 @@ const userSchema = new mongoose.Schema(
       preferences: { type: String, default: '' },
     },
   },
-  { timestamps: true } // auto adds createdAt and updatedAt
+  { timestamps: true }
 );
-
-// automatically hashes password before saving
-userSchema.pre('save', async function (next) {
-  if (this.isModified('passwordHash')) {
-    this.passwordHash = await bcrypt.hash(this.passwordHash, 10);
-  }
-  next();
-});
-
-// method to check if entered password is correct
-userSchema.methods.comparePassword = async function (candidate) {
-  return bcrypt.compare(candidate, this.passwordHash);
-};
 
 module.exports = mongoose.model('User', userSchema);
