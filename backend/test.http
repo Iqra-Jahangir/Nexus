@@ -1,0 +1,56 @@
+### Login first to get token
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test2@gmail.com",
+  "password": "password123"
+}
+
+### Create a meeting
+POST http://localhost:5000/api/meetings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMWQwYmFhZDY4YTgyN2MzM2JjNGU2ZCIsInJvbGUiOiJpbnZlc3RvciIsImlhdCI6MTc4MDY4NDQ3NiwiZXhwIjoxNzgxMjg5Mjc2fQ.8Ey-XDuzFjeGy0kEvAWi5jIKYPc0R4Yg0iDNaoPpNHo
+Content-Type: application/json
+
+{
+  "title": "Investment Discussion",
+  "invitee": "6a2316d45455f0e4aa534912",
+  "startTime": "2026-06-10T10:00:00.000Z",
+  "endTime": "2026-06-10T11:00:00.000Z",
+  "notes": "Discussing Series A funding"
+}
+
+### Register second user
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Investor User",
+  "email": "investor@gmail.com",
+  "password": "password123",
+  "role": "investor"
+}
+### Get all meetings
+GET http://localhost:5000/api/meetings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMWQwYmFhZDY4YTgyN2MzM2JjNGU2ZCIsInJvbGUiOiJpbnZlc3RvciIsImlhdCI6MTc4MDY4NDQ3NiwiZXhwIjoxNzgxMjg5Mjc2fQ.8Ey-XDuzFjeGy0kEvAWi5jIKYPc0R4Yg0iDNaoPpNHo
+
+### Accept original meeting
+PATCH http://localhost:5000/api/meetings/6a24638a5455f0e4aa534913/status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMjMxNmQ0NTQ1NWYwZTRhYTUzNDkxMiIsInJvbGUiOiJpbnZlc3RvciIsImlhdCI6MTc4MDY4NDUwMCwiZXhwIjoxNzgxMjg5MzAwfQ.v1_BIU5AxQPzPdCs6jgHK-GjRihdryStEhGrnkzMxYM
+Content-Type: application/json
+
+{
+  "status": "accepted"
+}
+### Test conflict detection — same time slot should return 409
+POST http://localhost:5000/api/meetings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMWQwYmFhZDY4YTgyN2MzM2JjNGU2ZCIsInJvbGUiOiJpbnZlc3RvciIsImlhdCI6MTc4MDY4NDQ3NiwiZXhwIjoxNzgxMjg5Mjc2fQ.8Ey-XDuzFjeGy0kEvAWi5jIKYPc0R4Yg0iDNaoPpNHo
+Content-Type: application/json
+
+{
+  "title": "Duplicate Meeting",
+  "invitee": "6a2316d45455f0e4aa534912",
+  "startTime": "2026-06-10T10:00:00.000Z",
+  "endTime": "2026-06-10T11:00:00.000Z",
+  "notes": "This should fail"
+}
