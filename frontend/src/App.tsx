@@ -12,6 +12,8 @@ import { InvestorDashboard } from './pages/dashboard/InvestorDashboard';
 // Profile Pages
 import { EntrepreneurProfile } from './pages/profile/EntrepreneurProfile';
 import { InvestorProfile } from './pages/profile/InvestorProfile';
+//Meeting Pages
+import { MeetingsPage } from './pages/meetings/MeetingsPage';
 // Feature Pages
 import { InvestorsPage } from './pages/investors/InvestorsPage';
 import { EntrepreneursPage } from './pages/entrepreneurs/EntrepreneursPage';
@@ -113,6 +115,12 @@ function App() {
             <Route index element={<ChatPage />} />
             <Route path=":userId" element={<ChatPage />} />
           </Route>
+
+          <Route path="/meetings" element={
+            <ProtectedRoute><DashboardLayout /></ProtectedRoute>
+               }>
+             <Route index element={<MeetingsPage />} />
+             </Route>
           
           {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />

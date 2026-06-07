@@ -16,7 +16,6 @@ const updateProfile = async (req, res) => {
   try {
     const { name, profileData } = req.body;
 
-    // only allow users to update their own profile
     if (req.user.id !== req.params.id) {
       return res.status(403).json({ error: 'Forbidden' });
     }
@@ -24,7 +23,7 @@ const updateProfile = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { name, profileData },
-      { new: true } // returns updated document
+      { new: true }
     ).select('-passwordHash');
 
     res.json(user);
@@ -33,4 +32,15 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, updateProfile };
+// GET /api/users/email/:email — find user by email
+const getUserByEmail = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email }).select('-passwordHash');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { getProfile, updateProfile, getUserByEmail };

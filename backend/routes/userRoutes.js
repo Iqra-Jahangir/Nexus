@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getProfile, updateProfile } = require('../controllers/userController');
+const { getProfile, updateProfile, getUserByEmail } = require('../controllers/userController');
 const { auth } = require('../middleware/auth');
 
+router.get('/email/:email', auth, getUserByEmail);
 router.get('/:id', auth, getProfile);
 router.put('/:id', auth, updateProfile);
 
