@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -20,6 +21,7 @@ interface Meeting {
 
 export const MeetingsPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -273,12 +275,22 @@ export const MeetingsPage: React.FC = () => {
                     </p>
                     {meeting.notes && <p className="text-sm text-gray-500">{meeting.notes}</p>}
                   </div>
-                  <Badge variant={
-                    meeting.status === 'accepted' ? 'success' :
-                    meeting.status === 'rejected' ? 'error' : 'warning'
-                  }>
-                    {meeting.status}
-                  </Badge>
+                  <div className="flex flex-col gap-2 items-end">
+  <Badge variant={
+    meeting.status === 'accepted' ? 'success' :
+    meeting.status === 'rejected' ? 'error' : 'warning'
+  }>
+    {meeting.status}
+  </Badge>
+  {meeting.status === 'accepted' && (
+    <button
+      onClick={() => navigate(`/video/${meeting._id}`)}
+      className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-md"
+    >
+      Join Call
+    </button>
+  )}
+</div>
                 </div>
               ))}
             </div>
