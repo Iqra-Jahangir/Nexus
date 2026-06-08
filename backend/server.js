@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
@@ -9,11 +11,11 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const meetingRoutes = require('./routes/meetingRoutes');
 const documentRoutes = require('./routes/documentRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
-const server = http.createServer(app); // wrap express in http server
+const server = http.createServer(app);
 
-// Socket.IO attached to http server
 const io = new Server(server, {
   cors: {
     origin: 'http://localhost:5173',
@@ -23,60 +25,58 @@ const io = new Server(server, {
 
 connectDB();
 
+// Security middleware
+app.use(helmet());
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-app.use('/uploads', express.static('uploads')); 
-app.use('/api/auth', authRoutes);
+// Rate limiting on auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { error: 'Too many attempts, please try again later' },
+});
+
+app.use('/uploads', express.static('uploads'));
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/meetings', meetingRoutes);
-app.use('/api/documents', documentRoutes);    
+app.use('/api/documents', documentRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/api/ping', (req, res) => {
   res.json({ status: 'ok', db: 'connected' });
 });
 
-// Socket.IO signaling server
+// Socket.IO signaling
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  // join a video call room
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
-    console.log(`Socket ${socket.id} joined room ${roomId}`);
-    // notify others in the room
     socket.to(roomId).emit('user-joined', socket.id);
   });
 
-  // WebRTC signaling — pass offer to other peer
-  socket.on('offer', (data) => {
-    socket.to(data.room).emit('offer', data);
-  });
+  socket.on('offer', (data) => socket.to(data.room).emit('offer', data));
+  socket.on('answer', (data) => socket.to(data.room).emit('answer', data));
+  socket.on('ice-candidate', (data) => socket.to(data.room).emit('ice-candidate', data));
 
-  // WebRTC signaling — pass answer to other peer
-  socket.on('answer', (data) => {
-    socket.to(data.room).emit('answer', data);
-  });
-
-  // WebRTC signaling — pass ICE candidates
-  socket.on('ice-candidate', (data) => {
-    socket.to(data.room).emit('ice-candidate', data);
-  });
-
-  // user leaves the call
   socket.on('leave-room', (roomId) => {
     socket.to(roomId).emit('user-left', socket.id);
     socket.leave(roomId);
-    console.log(`Socket ${socket.id} left room ${roomId}`);
   });
 
-  // handle disconnect
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
 });
 
-// use server.listen instead of app.listen
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: err.message });
+});
+
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

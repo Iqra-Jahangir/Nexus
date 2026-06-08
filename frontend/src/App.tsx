@@ -27,6 +27,8 @@ import { DealsPage } from './pages/deals/DealsPage';
 // Chat Pages
 import { ChatPage } from './pages/chat/ChatPage';
 
+import { PaymentsPage } from './pages/payments/paymentsPage';
+
 // ProtectedRoute — redirects to login if not authenticated
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const token = localStorage.getItem('business_nexus_token');
@@ -125,6 +127,11 @@ function App() {
              <Route path="/video/:roomId" element={
              <ProtectedRoute><VideoCallPage /></ProtectedRoute>
              } />
+             <Route path="/payments" element={
+              <ProtectedRoute><DashboardLayout /></ProtectedRoute>
+               }>
+            <Route index element={<PaymentsPage />} />
+            </Route>
           
           {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
