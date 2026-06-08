@@ -8,9 +8,10 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const meetingRoutes = require('./routes/meetingRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 
 const app = express();
-const server = http.createServer(app); // 👈 wrap express in http server
+const server = http.createServer(app); // wrap express in http server
 
 // Socket.IO attached to http server
 const io = new Server(server, {
@@ -25,9 +26,11 @@ connectDB();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
+app.use('/uploads', express.static('uploads')); 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/meetings', meetingRoutes);
+app.use('/api/documents', documentRoutes);    
 
 app.get('/api/ping', (req, res) => {
   res.json({ status: 'ok', db: 'connected' });
