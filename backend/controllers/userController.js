@@ -43,4 +43,14 @@ const getUserByEmail = async (req, res) => {
   }
 };
 
-module.exports = { getProfile, updateProfile, getUserByEmail };
+// GET /api/users/role/entrepreneur — get all entrepreneurs
+const getEntrepreneurs = async (req, res) => {
+  try {
+    const users = await User.find({ role: 'entrepreneur' }).select('-passwordHash');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { getProfile, updateProfile, getUserByEmail, getEntrepreneurs };

@@ -12,6 +12,8 @@ const userRoutes = require('./routes/userRoutes');
 const meetingRoutes = require('./routes/meetingRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -29,6 +31,7 @@ connectDB();
 app.use(helmet());
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+app.use('/api/messages', messageRoutes);
 
 // Rate limiting on auth routes
 const authLimiter = rateLimit({
@@ -48,10 +51,23 @@ app.get('/api/ping', (req, res) => {
   res.json({ status: 'ok', db: 'connected' });
 });
 
-// Socket.IO signaling
+// Socket.IO signaling + real-time chat
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
+  // join personal room for direct messages
+  socket.on('join-user-room', (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their room`);
+  });
+
+  // handle chat message
+  socket.on('send-message', (data) => {
+    // send to receiver's room
+    io.to(data.receiverId).emit('receive-message', data);
+  });
+
+  // video call signaling
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
     socket.to(roomId).emit('user-joined', socket.id);
